@@ -115,8 +115,8 @@ See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the state model, engine
 **Prerequisites:** Node.js 22.12 or later (current LTS) and npm. Node 22 is required by the test runner; the app itself builds on older Node versions. No environment variables, API keys or external services are required.
 
 ```bash
-git clone https://github.com/kwek-na-yi/polyfintech-2026-ocbc-financial-guardian.git
-cd polyfintech-2026-ocbc-financial-guardian
+git clone https://github.com/kwek-na-yi/PolyFinTech-2026-OCBC-Financial-Guardian.git
+cd PolyFinTech-2026-OCBC-Financial-Guardian
 npm install
 npm run dev
 ```
