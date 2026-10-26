@@ -32,7 +32,9 @@ export default function CashflowChart() {
   const rawMin = Math.min(...balances, 0);
   const span = rawMax - rawMin || 1000;
   const yMax = rawMax + span * 0.16;
-  const yMin = rawMin - span * 0.12;
+  // Extra bottom head-room keeps the two-line lowest-point callout clear of the
+  // x-axis labels, even when the low is the chart minimum (e.g. negative).
+  const yMin = rawMin - span * 0.25;
 
   const x = (day: number) => padL + (day / maxDay) * (W - padL - padR);
   const y = (bal: number) =>
@@ -40,21 +42,28 @@ export default function CashflowChart() {
 
   const pts = timeline.map((p) => ({ ...p, cx: x(p.day), cy: y(p.balance) }));
 
-  // Smooth Catmull-Rom -> cubic bezier path
+  // Monotone cubic (Fritsch–Carlson) path. Unlike a Catmull-Rom spline it never
+  // overshoots between points, so the curve can't dip below the marked lowest
+  // balance or bend backwards in time on the steep rise to payday.
   const smoothPath = (nodes: { cx: number; cy: number }[]) => {
     if (nodes.length < 2) return "";
+    const n = nodes.length;
+    const h = nodes.slice(1).map((p, i) => p.cx - nodes[i].cx);
+    const s = nodes.slice(1).map((p, i) => (p.cy - nodes[i].cy) / (h[i] || 1));
+    const m = nodes.map((_, i) => {
+      if (i === 0) return s[0];
+      if (i === n - 1) return s[n - 2];
+      const [s0, s1, h0, h1] = [s[i - 1], s[i], h[i - 1], h[i]];
+      if (s0 * s1 <= 0) return 0; // local peak or trough: flat tangent
+      const p = (s0 * h1 + s1 * h0) / (h0 + h1);
+      return (Math.sign(s0) + Math.sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p));
+    });
     let d = `M ${nodes[0].cx.toFixed(1)} ${nodes[0].cy.toFixed(1)}`;
-    for (let i = 0; i < nodes.length - 1; i++) {
-      const p0 = nodes[i - 1] || nodes[i];
+    for (let i = 0; i < n - 1; i++) {
+      const dx = h[i] / 3;
       const p1 = nodes[i];
       const p2 = nodes[i + 1];
-      const p3 = nodes[i + 2] || p2;
-      const t = 0.18;
-      const c1x = p1.cx + (p2.cx - p0.cx) * t;
-      const c1y = p1.cy + (p2.cy - p0.cy) * t;
-      const c2x = p2.cx - (p3.cx - p1.cx) * t;
-      const c2y = p2.cy - (p3.cy - p1.cy) * t;
-      d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.cx.toFixed(1)} ${p2.cy.toFixed(1)}`;
+      d += ` C ${(p1.cx + dx).toFixed(1)} ${(p1.cy + m[i] * dx).toFixed(1)}, ${(p2.cx - dx).toFixed(1)} ${(p2.cy - m[i + 1] * dx).toFixed(1)}, ${p2.cx.toFixed(1)} ${p2.cy.toFixed(1)}`;
     }
     return d;
   };
@@ -65,6 +74,11 @@ export default function CashflowChart() {
 
   const lowest = pts.find((p) => p.lowest);
   const salary = pts.find((p) => p.type === "credit");
+
+  // Weekly x-axis ticks on the proportional time scale. Events cluster in the
+  // first ten days (often a day apart), so labelling every event overlaps;
+  // each event keeps its node, and the low point and payday have callouts.
+  const ticks = Array.from(new Set([0, 7, 14, 21, maxDay])).filter((d) => d <= maxDay);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
@@ -99,7 +113,8 @@ export default function CashflowChart() {
         strokeDasharray="4 4"
         opacity={0.55}
       />
-      <text x={padL + 2} y={thresholdY - 4} style={{ fontSize: 8, fontWeight: 700 }} className="fill-ocbc-red">
+      {/* Right-aligned: the pre-payday dip crosses the cushion on the left. */}
+      <text x={W - padR - 2} y={thresholdY - 4} textAnchor="end" style={{ fontSize: 8, fontWeight: 700 }} className="fill-ocbc-red">
         SGD 500 safety cushion
       </text>
 
@@ -197,24 +212,26 @@ export default function CashflowChart() {
           <text x={lowest.cx} y={lowest.cy + 18} textAnchor="middle" style={{ fontSize: 8.5, fontWeight: 800 }} className="fill-ocbc-red">
             {formatSGD(lowest.balance)}
           </text>
-          <text x={lowest.cx} y={lowest.cy + 28} textAnchor="middle" style={{ fontSize: 7.5, fontWeight: 600 }} className="fill-ocbc-red">
+          <text x={lowest.cx} y={lowest.cy + 29} textAnchor="middle" style={{ fontSize: 7.5, fontWeight: 600 }} className="fill-ocbc-red">
             lowest · day {lowest.day}
           </text>
         </motion.g>
       )}
 
-      {/* X-axis day labels */}
-      {pts.map((p) => (
-        <text
-          key={`x-${p.id}`}
-          x={p.cx}
-          y={H - 8}
-          textAnchor={p.day === 0 ? "start" : p.day === maxDay ? "end" : "middle"}
-          style={{ fontSize: 7.5, fontWeight: 600 }}
-          className="fill-ocbc-mute"
-        >
-          {p.day === 0 ? "Today" : p.day === maxDay ? "Month end" : `D${p.day}`}
-        </text>
+      {/* X-axis weekly ticks */}
+      {ticks.map((d) => (
+        <g key={`x-${d}`}>
+          <line x1={x(d)} x2={x(d)} y1={H - padB} y2={H - padB + 3} stroke="#9AA0A6" strokeWidth={0.75} />
+          <text
+            x={x(d)}
+            y={H - 12}
+            textAnchor={d === 0 ? "start" : d === maxDay ? "end" : "middle"}
+            style={{ fontSize: 8, fontWeight: 600 }}
+            className="fill-ocbc-mute"
+          >
+            {d === 0 ? "Today" : d === maxDay ? "Month end" : `Day ${d}`}
+          </text>
+        </g>
       ))}
     </svg>
   );

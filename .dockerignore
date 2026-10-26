@@ -1,13 +1,27 @@
+# dependencies and build output (rebuilt inside the image)
 node_modules
 .next
 out
 build
-npm-debug.log*
+coverage
+*.tsbuildinfo
+
+# secrets and local tooling
+.env*
+.vercel
+.claude
 .git
 .gitignore
+.DS_Store
+npm-debug.log*
+
+# not needed at runtime
 Dockerfile
 .dockerignore
 docker-compose.yml
 README.md
-.env*.local
-.DS_Store
+docs
+DEMO-*.md
+*.test.ts
+*.test.tsx
+vitest.config.mts

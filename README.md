@@ -97,8 +97,9 @@ A client-side Next.js App Router application with no API layer:
 - **`components/GuardianStateProvider.tsx`**: a React context that stores only `balance`, `savings` and `transactions` and derives the forecast, risk and recommendations from them on every change, so no screen can drift out of sync.
 - **`app/`**: route pages for the home screen, Guardian briefing and forecast, PayNow, Scan & Pay, Save and account activity.
 - **`components/`**: shared UI, including the SVG forecast chart and the press-and-hold approval control.
+- **Tests** sit next to the code they cover: `lib/mockData.test.ts` and `components/GuardianStateProvider.test.tsx`.
 
-See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the state model, engine formulas, PayNow risk tiers, simulated actions and route map.
+See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the state model, engine formulas, PayNow risk tiers, simulated actions, route map and test coverage.
 
 | Area | Technology |
 |------|------------|
@@ -106,11 +107,12 @@ See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the state model, engine
 | Language | TypeScript 5 (strict mode) |
 | Styling | Tailwind CSS 3.4, PostCSS, Autoprefixer |
 | Animation and icons | Framer Motion 11, lucide-react |
+| Quality | ESLint 8 (`next/core-web-vitals`), Vitest 5, React Testing Library, jsdom |
 | Deployment | Vercel; optional Docker image using Next.js standalone output |
 
 ## Getting started
 
-**Prerequisites:** Node.js 18.17 or later (20 LTS recommended) and npm. No environment variables, API keys or external services are required.
+**Prerequisites:** Node.js 22.12 or later (current LTS) and npm. Node 22 is required by the test runner; the app itself builds on older Node versions. No environment variables, API keys or external services are required.
 
 ```bash
 git clone https://github.com/kwek-na-yi/polyfintech-2026-ocbc-financial-guardian.git
@@ -124,11 +126,25 @@ Open [http://localhost:3000](http://localhost:3000). The UI is designed for phon
 | Task | Command |
 |------|---------|
 | Development server | `npm run dev` |
+| Lint | `npm run lint` |
+| Type-check | `npm run typecheck` |
+| Tests | `npm test` (or `npm run test:watch`) |
 | Production build | `npm run build` |
 | Serve the production build | `npm start` (logs a standalone-output warning; the build still serves) |
 | Docker | `docker compose up --build`, then open `http://localhost:3000` |
 
 All state is held in memory. Refreshing the page restores the seed data.
+
+### Tests
+
+The test suite (45 tests) checks the deterministic engine and the in-memory store:
+
+- **Forecast:** the seed low and month-end figures, event ordering, the pre-payday window, and zero and negative balances.
+- **Risk and recommendations:** the cushion boundaries for each risk level, how top-ups are sized, and that top-ups never exceed savings.
+- **PayNow tiers:** boundaries for all five tiers, including the 40%-of-savings threshold and the empty-savings case.
+- **Simulated actions:** each action's effect on balances and the ledger, actions compounding across a session, and reset.
+
+The tests confirm the code does what it is designed to do. They do not show that the forecasts are financially accurate.
 
 ## Example user journey
 
@@ -159,7 +175,8 @@ The demo follows a fictional customer, Jia Hui, mid-month with payday ten days a
 - **No backend or persistence.** State lives in browser memory and resets on refresh. There are no user accounts.
 - **No production security.** There is no authentication, consent management, transaction signing or audit logging.
 - **Single scenario.** One customer profile and one PayNow recipient.
-- **No automated tests or lint configuration.** Verification so far is manual, plus TypeScript strict type-checking and the production build.
+- **Limited test coverage.** Unit and integration tests cover the engine and state store; there are no automated UI or end-to-end tests and no CI pipeline yet.
+- **Dependency advisories.** `npm audit` reports advisories against Next.js 14 and Tailwind CSS 3 whose fixes require major-version upgrades, which have not been made.
 
 ## Future development roadmap
 
@@ -168,7 +185,7 @@ The demo follows a fictional customer, Jia Hui, mid-month with payday ten days a
 1. **Data and infrastructure:** a secure backend and database; authentication and consent management; persistent profiles, preferences and transaction history; a controlled integration with approved banking data sources, subject to appropriate access and approval.
 2. **Forecasting and risk:** forecasting models validated against historical data, including irregular spending; anomaly detection with calibrated confidence; benchmarking against the current rule-based engine; work to reduce false alerts.
 3. **Responsible recommendations:** explainable recommendation workflows; tightly scoped permissions and approval steps for any money movement; audit trails, monitoring, fallbacks and rollback procedures; adversarial testing and human oversight.
-4. **Quality and pilot:** automated unit and end-to-end tests; security, privacy and regulatory review; internal testing followed by a limited opt-in pilot measured against the metrics below.
+4. **Quality and pilot:** end-to-end UI tests and continuous integration; an upgrade to current framework versions; security, privacy and regulatory review; internal testing followed by a limited opt-in pilot measured against the metrics below.
 
 ## Proposed success metrics
 
@@ -190,3 +207,5 @@ Developed by **Team NeuroStack** for the **PolyFinTech Hackathon 2026**. Thanks 
 ## Disclaimer
 
 Financial Guardian is an independent educational and hackathon prototype built with illustrative data. It is **not an official OCBC product** and is not affiliated with, endorsed by or connected to OCBC Bank. It does not access real bank accounts, does not move real money, and must not be used to make real financial decisions. Bank, product and merchant names appear only to make the simulated scenario realistic; all trademarks belong to their respective owners.
+
+No open-source licence has been granted yet. Until one is added, the code is shared for viewing only and all rights are reserved.

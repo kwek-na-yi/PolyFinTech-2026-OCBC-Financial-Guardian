@@ -33,3 +33,9 @@ Thumbs.db
 /STOP DEMO.bat
 /start-demo.ps1
 /stop-demo.ps1
+
+# test coverage output
+/coverage
+
+# private hackathon pitch notes (kept locally, not published)
+/DEMO-*.md

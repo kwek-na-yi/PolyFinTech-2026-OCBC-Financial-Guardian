@@ -229,7 +229,7 @@ function ReviewStep({
         className="overflow-hidden rounded-xl2 bg-white shadow-card"
       >
         <div className="border-b border-ocbc-line px-5 py-5 text-center">
-          <p className="text-[12px] font-medium text-ocbc-slate">You're sending</p>
+          <p className="text-[12px] font-medium text-ocbc-slate">You&apos;re sending</p>
           <p className="mt-1 text-[34px] font-extrabold leading-none text-ocbc-ink">
             {formatSGD(amount)}
           </p>

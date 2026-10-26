@@ -12,6 +12,7 @@ Everything described here runs in the browser. There is **no backend, database, 
 - [Simulated actions](#simulated-actions)
 - [Routes](#routes)
 - [UI components](#ui-components)
+- [Testing](#testing)
 - [Build and deployment](#build-and-deployment)
 - [Known simplifications](#known-simplifications)
 
@@ -126,7 +127,7 @@ A display score anchored at 92 for the seed low. Above the seed low it rises tow
 - **Money move (r1)**, only when `low < 500`. The target floor is the cushion plus about one week of typical spending (`500 + round(2,420 / 4) = 1,105`). The ideal transfer is `roundUpTo100(1,105 − low)`, which is **SGD 700** for the seed data. It is then capped by `savingsBridge` at the available savings. If savings can't lift the low above the cushion, the copy switches to an honest "top up what you can" variant.
 - **Ease off fun spending (r2)** and **hold the investment top-up (r3)** are fixed behavioural suggestions based on the illustrative 18% overspend figure.
 - Each recommendation carries `before`/`after`, `why` and `ifIgnored` text. The risk-reduction percentages are fixed illustrative values; `combinedRiskReduction` compounds the selected ones (`1 − Π(1 − rᵢ)`).
-- `planConfidence(lowAfter)` produces the "% sure" figure from a fixed data-completeness constant (0.94) plus the margin above the cushion, clamped to 80–98.
+- `planConfidence(lowAfter)` produces the "% sure" figure from a fixed data-completeness constant (0.94) plus the margin above the cushion. Its nominal clamp is 80–98, but because the margin term is never negative it effectively ranges from 90 (no margin) to 96 (a full SGD 500 of margin): 96% for the Journey A plan, 91% for the PayNow plan.
 
 ### Savings cap — `savingsBridge(needed, savingsAvailable)`
 
@@ -196,7 +197,7 @@ All routes are statically prerendered by `next build`; interactivity is client-s
 | `PhoneFrame` | Centres the app in a 430 px phone frame on desktop; full-screen on mobile |
 | `AppHeader`, `BottomNav`, `SectionCard`, `PrimaryButton`, `Keypad`, `PageTransition` | Shared layout and controls |
 | `GuardianCard` | Home-screen card with alert, healthy and post-approval states |
-| `CashflowChart` | Hand-built SVG chart of the forecast against the cushion |
+| `CashflowChart` | Hand-built SVG chart of the forecast against the cushion. Uses monotone cubic interpolation so the curve never overshoots the forecast points (it can't dip below the marked low), with weekly x-axis ticks because event days cluster too closely to label individually |
 | `HealthScoreRing` | Animated score/percentage ring |
 | `RecommendationBody`, `WhyThis` | Recommendation detail and expandable explanations |
 | `HoldToApprove` | Press-and-hold consent control (pointer events; ~1 s hold) |
@@ -206,8 +207,20 @@ All routes are statically prerendered by `next build`; interactivity is client-s
 | `FakeQR` | Decorative, non-scannable QR graphic |
 | `ConfirmationModal` | Generic confirmation dialog (not currently used by any route) |
 
+## Testing
+
+Tests use [Vitest](https://vitest.dev/) (`vitest.config.mts`) and sit next to the code they cover:
+
+| File | Environment | Covers |
+|------|-------------|--------|
+| `lib/mockData.test.ts` | Node | `buildForecast`, risk boundaries in `deriveGuardian`, recommendation sizing and the savings cap, `deriveHealthScore`, `combinedRiskReduction`, `planConfidence`, `savingsBridge`, `paynowProjection`, every `paynowAssessment` tier, `scanAssessment` |
+| `components/GuardianStateProvider.test.tsx` | jsdom + React Testing Library | Each simulated action's effect on balances and the ledger, actions compounding across a session, `reset`, and the out-of-provider error |
+
+Fixtures are deterministic: the seed data plus explicit balances and events defined in each test. No network calls or real accounts are involved. Linting uses ESLint 8 with `next/core-web-vitals` (`.eslintrc.json`), and `npm run lint` fails on any warning.
+
 ## Build and deployment
 
+- `next build` also runs ESLint and the TypeScript check, so a lint or type error fails the build.
 - `next.config.js` sets `output: "standalone"` for a self-contained server build, used by the multi-stage `Dockerfile` (`node:20-alpine`, runs as a non-root user on port 3000).
 - `npm start` (`next start`) still serves the build locally but logs a warning that standalone output is intended for `node .next/standalone/server.js`.
 - The public demo is deployed on Vercel.
@@ -219,4 +232,4 @@ All routes are statically prerendered by `next build`; interactivity is client-s
 - Un-itemised spending is a single month-end constant, so the forecast's shape only changes through the starting balance.
 - The briefing date, life-event confidence ("87% sure"), spending-overspend figure and behavioural risk reductions are fixed illustrative values.
 - No persistence: a reload resets all state.
-- No automated tests or lint configuration.
+- Automated tests cover the engine and store only; there are no UI or end-to-end tests.
