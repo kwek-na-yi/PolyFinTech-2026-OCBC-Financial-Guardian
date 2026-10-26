@@ -1,0 +1,35 @@
+# dependencies
+/node_modules
+
+# Next.js / build output
+/.next
+/out
+/build
+next-env.d.ts.timestamp
+*.tsbuildinfo
+
+# environment files and credentials
+.env*
+*.pem
+*.key
+
+# deployment
+.vercel
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local tooling and OS files
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# local-only demo launch scripts (machine-specific paths)
+/START DEMO.bat
+/STOP DEMO.bat
+/start-demo.ps1
+/stop-demo.ps1
