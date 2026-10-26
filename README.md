@@ -1,209 +1,116 @@
 # Financial Guardian
 
-**Catch cash-flow problems before they happen — a proactive banking companion that forecasts the next 30 days, flags risky payments before they are sent, and leaves every decision with the customer.**
+A proactive banking prototype that forecasts a customer's next 30 days, flags cash-flow risks before a payment is made, and leaves every decision with the customer.
 
 Built by **Team NeuroStack** for the **PolyFinTech Hackathon 2026**.
 
-![Next.js](https://img.shields.io/badge/Next.js-14.2-000000?logo=nextdotjs)
-![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)
-![Deployed on Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?logo=vercel)
+**Live demo:** [ocbc-financial-guardian.vercel.app](https://ocbc-financial-guardian.vercel.app) · best viewed at phone width
 
-**Live demo:** [ocbc-financial-guardian.vercel.app](https://ocbc-financial-guardian.vercel.app)
+<p align="center">
+  <img src="docs/screenshots/01-home.png" alt="Simulated banking home screen" width="230">
+  &nbsp;
+  <img src="docs/screenshots/03-forecast.png" alt="30-day cash-flow forecast dipping below the safety cushion" width="230">
+  &nbsp;
+  <img src="docs/screenshots/05-paynow-intervention.png" alt="PayNow pre-transaction intervention" width="230">
+</p>
 
 > Independent hackathon prototype using illustrative data. Not an official OCBC product. See the [disclaimer](#disclaimer).
 
----
-
-## Contents
-
-- [Overview](#overview)
-- [Problem statement](#problem-statement)
-- [Our solution](#our-solution)
-- [Key features](#key-features)
-- [How it works](#how-it-works)
-- [Architecture and technical implementation](#architecture-and-technical-implementation)
-- [Technology stack](#technology-stack)
-- [Getting started](#getting-started)
-- [Example user journey](#example-user-journey)
-- [Screenshots and demonstration](#screenshots-and-demonstration)
-- [Current limitations](#current-limitations)
-- [Future implementation roadmap](#future-implementation-roadmap)
-- [Success metrics](#success-metrics)
-- [Team and acknowledgements](#team-and-acknowledgements)
-- [Disclaimer](#disclaimer)
-
----
-
 ## Overview
 
-Financial Guardian is a mobile banking prototype that looks *forward* rather than backward. Starting from a customer's current balance and their known upcoming bills, subscriptions and salary, it projects the spending account's balance over the next 30 days, finds the lowest point before payday, and warns the customer if that point falls below a safety cushion they want to keep. It then suggests concrete fixes — such as moving a specific amount from savings — explains how each figure was derived, and only carries out a (simulated) action after the customer explicitly approves it. The same forward check runs at the moment of payment: before a large PayNow transfer is sent, the customer sees what it would do to their balance before payday and can choose how to proceed.
+Most banking apps show what has already happened: the current balance and past transactions. Financial Guardian looks ahead instead. It replays a customer's known upcoming bills, subscriptions and salary against their live balance, finds the lowest point before payday, and warns them if that point falls below a safety cushion they want to keep. It then suggests specific fixes, explains how each figure was calculated, and carries out a (simulated) action only after the customer explicitly approves it.
 
-The prototype is presented inside a simulated, OCBC-style mobile banking app to show how the concept could sit within an existing banking experience.
+The same check runs at the moment of payment: before a large PayNow transfer is sent, the customer sees what it would do to their balance before payday and chooses how to proceed. The prototype is presented inside a simulated, OCBC-style mobile banking app to show how the idea could sit within an existing banking experience.
 
 ## Problem statement
 
-Most banking apps are built around **what has already happened**: the current balance and a list of past transactions. That is useful, but it leaves the customer to work out what happens next.
+- **Balances hide commitments.** A healthy balance today can conceal rent, insurance or a deposit due before the next salary. Customers have to subtract these in their heads to know what is actually safe to spend.
+- **Shortfalls are often about timing.** A customer can earn enough over the month and still run short for a few days if large outgoings land before payday.
+- **The payment is the decision point.** Once a transfer appears in the transaction history, the money has already gone. A prompt *before* confirming a payment is more useful than a low-balance alert afterwards.
+- **Guidance must keep the customer in control.** Proactive help is only trustworthy if it explains itself and never acts on the customer's behalf without consent.
 
-- **Balances don't show commitments.** A healthy balance today can hide a rent payment, insurance premium or deposit that is due before the next salary credit. The customer has to mentally subtract those commitments to know what is actually safe to spend.
-- **Shortfalls come from timing, not just overspending.** A customer can earn enough over the month and still run short for a few days if large outgoings land before payday.
-- **The risky moment is the payment itself.** By the time a transaction appears in history, the decision has been made. A prompt *before* confirming a payment — "this would leave you below your cushion on day 9" — is far more useful than a low-balance alert afterwards.
-- **Customer-centric banking means helping, not deciding.** Any proactive guidance has to be explainable and has to leave the customer in control of their own money.
-
-This challenge sits squarely within proactive, customer-centric banking: using information a bank already holds about scheduled payments and income patterns to help customers avoid avoidable stress.
+This makes the challenge a good fit for proactive, customer-centric banking: using information a bank already holds about scheduled payments and income to help customers avoid preventable cash-flow stress.
 
 ## Our solution
 
-Financial Guardian shifts the experience from **reactive reporting** to **proactive guidance** in four steps:
+Financial Guardian moves the experience from reactive reporting to proactive guidance:
 
-1. **Forecast** — Replay known upcoming debits and credits against the live balance to produce a day-by-day projection to month end.
-2. **Assess** — Find the lowest projected balance before salary day and compare it with the customer's safety cushion (SGD 500 in the demo). For a proposed payment, simulate the position *after* the payment and grade the outcome.
-3. **Recommend** — Prepare specific actions (e.g. "move SGD 700 from savings"), each with the current situation, the expected before/after result, and a plain-language "why" that shows how the amount was calculated. Recommendations never propose moving more than the savings balance actually holds.
-4. **Defer to the customer** — Nothing moves without a deliberate press-and-hold approval. The customer can also ignore the advice and proceed anyway; Guardian never blocks a payment.
+1. **Forecast:** project the spending account day by day to month end from the live balance and scheduled events.
+2. **Assess:** compare the lowest balance before payday with the customer's cushion (SGD 500 in the demo). For a proposed payment, simulate the position *after* the payment and grade the outcome.
+3. **Recommend:** propose specific actions (e.g. "move SGD 700 from savings") with before/after figures and a plain-language explanation of how the amount was chosen. Recommendations never exceed the savings balance actually available.
+4. **Defer to the customer:** nothing moves without a deliberate press-and-hold approval, and every intervention offers a way to proceed without the plan.
+
+### Intended value
+
+These are hypotheses that a pilot would need to test, not demonstrated results:
+
+- **For customers:** earlier warning of short-term shortfalls, clearer understanding of upcoming commitments, and practical options at the moment of decision.
+- **For the bank:** a more useful, engagement-driving digital experience, and potentially fewer customer shortfalls and the support contacts that follow them.
 
 ## Key features
 
-All features below are implemented in the prototype and operate on simulated data.
+Everything below is implemented in the prototype and runs on simulated data.
 
-| # | Feature | Where it lives |
-|---|---------|----------------|
-| 1 | **30-day cash-flow forecast** — balance projection rebuilt from the live balance and scheduled events, shown as a chart and a dated timeline. | `buildForecast()` in `lib/mockData.ts`; `/guardian/cashflow`, `components/CashflowChart.tsx` |
-| 2 | **Lowest-balance and shortfall detection** — the lowest point before salary day is flagged and compared with the SGD 500 cushion; risk is Low / Medium / High depending on whether it breaches the cushion or goes negative. | `buildForecast()`, `deriveGuardian()` |
-| 3 | **Personalised recommendations with explanations** — a money-move recommendation sized from the forecast plus two behavioural suggestions, each with before/after, "if ignored" and "Why am I seeing this?" content. | `buildMoneyMoveRec()`, `/guardian/actions`, `components/RecommendationBody.tsx`, `components/WhyThis.tsx` |
-| 4 | **PayNow pre-transaction risk assessment** — before final confirmation, the transfer is graded into one of five tiers (`clear`, `steady`, `protect`, `drawdown`, `shortfall`); the higher tiers trigger an intervention sheet showing the reasoning, with options to see a plan, change the amount or send anyway. | `paynowAssessment()`, `/paynow` |
-| 5 | **Savings top-up suggestions capped to available funds** — top-ups are rounded to SGD 100 and limited to the simulated savings balance; when savings cannot cover the gap, the copy says so. | `savingsBridge()`, `paynowProjection()`, `/paynow/plan` |
-| 6 | **Explicit approval before simulated actions** — a press-and-hold control is required before any simulated money movement. | `components/HoldToApprove.tsx` |
-| 7 | **Forecast-aware Scan & Pay and Save flows** — a mock QR merchant payment and a move-to-savings flow both show a non-blocking note based on the projected position after the action. | `scanAssessment()`, `/scan`, `/save` |
-| 8 | **Account activity ledgers** — spending and savings ledgers that gain new rows for every simulated transfer, payment or top-up. | `components/AccountActivity.tsx`, `/account/frank`, `/account/savings` |
-| 9 | **Before-and-after outcomes** — success screens compare health score, risk level, lowest balance and month-end projection before and after the action. | `/guardian/success`, `/paynow/success`, `/scan/success`, `/save/success` |
-| 10 | **Session-level state that compounds** — every action updates the in-memory balances, so later forecasts and assessments reflect earlier actions (e.g. the same SGD 800 PayNow needs a smaller top-up after a previous savings transfer). | `components/GuardianStateProvider.tsx` |
+| Feature | What it does |
+|---------|--------------|
+| **30-day cash-flow forecast** | Rebuilds a day-by-day projection from the live balance and scheduled events, shown as a chart and a dated timeline. |
+| **Shortfall detection** | Flags the lowest balance before payday and rates risk Low, Medium or High depending on whether it breaches the cushion or goes negative. |
+| **Explainable recommendations** | Sizes a savings top-up from the forecast and adds two behavioural suggestions, each with before/after, "if ignored" and "Why am I seeing this?" detail. |
+| **PayNow pre-transaction check** | Grades a transfer before confirmation into one of five outcome tiers; higher-risk tiers open an intervention sheet showing the reasoning, with *See my plan*, *Change amount* and *Send anyway* options. |
+| **Savings top-ups capped to real funds** | Rounds top-ups to SGD 100 and limits them to the simulated savings balance; when savings can't close the gap, the copy says so. |
+| **Explicit approval** | Requires a press-and-hold gesture before any simulated money movement. |
+| **Forecast-aware Scan & Pay and Save** | Shows a non-blocking note on a mock QR payment or a move to savings, based on the projected position afterwards. |
+| **Account activity ledgers** | Adds a ledger row for every simulated transfer, payment or top-up, on both accounts. |
+| **Before-and-after outcomes** | Success screens compare status score, risk level, lowest balance and month-end projection. |
+| **Session state that compounds** | Every action updates in-memory balances, so later forecasts and assessments reflect earlier actions. |
 
 ## How it works
 
-```
-Account balances + scheduled events (bills, subscriptions, salary)
-        │
-        ▼
-Cash-flow forecast         buildForecast(balance)
-        │                  → day-by-day points, lowest balance before payday, month-end
-        ▼
-Risk assessment            deriveGuardian(...) / paynowAssessment(...) / scanAssessment(...)
-        │                  → status, risk level, intervention tier
-        ▼
-Recommendation generation  buildMoneyMoveRec(...), savingsBridge(...), paynowProjection(...)
-        │                  → amounts, before/after figures, explanations
-        ▼
-Customer review & approval Action Centre / PayNow plan → press-and-hold to approve
-        │
-        ▼
-Simulated execution        approvePlan / runPayNow / payMerchant / saveMoney
-        │                  → update in-memory balance, savings and transactions
-        ▼
-Updated balances, forecast, risk and ledgers (all re-derived automatically)
-```
-
-**The decision engine is deterministic.** Every number is computed by plain TypeScript functions from a small set of inputs: the spending balance, the savings balance and a fixed list of scheduled events. The same inputs always produce the same outputs. The "Guardian is thinking…" and "carrying out your plan…" sequences (`components/GuardianSequence.tsx`) are timed presentation animations that step through fixed labels; they do not represent live model inference.
-
-A few worked numbers from the seed data:
-
-- Starting balance SGD 2,300 → after Spotify, ChatGPT, groceries, insurance and a SGD 1,400 rental deposit, the forecast bottoms out at **SGD 484.20 on day 9**, just under the SGD 500 cushion, before a SGD 4,500 salary on day 10.
-- The Journey A top-up targets the cushion plus about one week of typical spending (SGD 500 + SGD 605), rounded up to SGD 100 → **SGD 700 from savings**.
-- A SGD 800 PayNow would push the low to **−SGD 315.80**; the plan tops up **SGD 900** (rounded to clear the cushion, within the SGD 1,200 savings balance), lifting the low to **SGD 584.20** and risk from Medium to Low.
-
-## Architecture and technical implementation
-
-The app is a client-side Next.js (App Router) application. There is no API layer: every screen reads from one React context, which derives everything from two stored numbers.
-
 ```mermaid
-flowchart TD
-    subgraph Data["lib/mockData.ts — seed data + deterministic engine"]
-        Seed["Seed data<br/>accounts, transactions,<br/>scheduledEvents, SAFETY_BUFFER"]
-        Forecast["buildForecast()"]
-        Guardian["deriveGuardian()<br/>buildMoneyMoveRec()<br/>savingsBridge()"]
-        Assess["paynowAssessment()<br/>paynowProjection()<br/>scanAssessment()"]
-        Seed --> Forecast --> Guardian
-        Seed --> Assess
-    end
-
-    subgraph State["components/GuardianStateProvider.tsx — in-memory React context"]
-        Prim["Stored: balance, savings, transactions"]
-        Derived["Derived: forecast, risk, health score,<br/>Guardian view-model, before/after snapshot"]
-        Actions["Actions: approvePlan, runPayNow,<br/>payMerchant, saveMoney, reset"]
-        Prim --> Derived
-        Actions --> Prim
-    end
-
-    subgraph UI["app/ routes + components/"]
-        Home["/ — home dashboard + GuardianCard"]
-        GuardianPages["/guardian — briefing, overview,<br/>cashflow, actions, success"]
-        PayNow["/paynow — amount, review,<br/>intervention, plan, success"]
-        Rails["/scan, /save, /account/*"]
-    end
-
-    Forecast --> Derived
-    Guardian --> Derived
-    Assess --> PayNow
-    Assess --> Rails
-    Derived --> Home
-    Derived --> GuardianPages
-    Derived --> PayNow
-    Derived --> Rails
-    GuardianPages -- "HoldToApprove" --> Actions
-    PayNow -- "HoldToApprove / send anyway" --> Actions
-    Rails --> Actions
+flowchart LR
+    A["Balances +<br/>scheduled events"] --> B["30-day<br/>forecast"]
+    B --> C["Risk<br/>assessment"]
+    C --> D["Recommendation<br/>+ explanation"]
+    D --> E["Customer review<br/>and approval"]
+    E --> F["Simulated<br/>execution"]
+    F --> G["Updated balances,<br/>forecast and ledger"]
+    G --> B
 ```
 
-### Key modules
+**The decision engine is deterministic.** Every figure is computed by plain TypeScript functions from three inputs: the spending balance, the savings balance and a fixed list of scheduled events. The same inputs always give the same outputs. The "thinking" and "carrying out your plan" sequences are timed presentation animations, not live model inference.
 
-| File | Responsibility |
-|------|----------------|
-| `lib/mockData.ts` | Seed data (customer, accounts, transactions, scheduled events, PayNow and Scan scenarios) and the deterministic engine: `buildForecast`, `deriveHealthScore`, `deriveGuardian`, `buildMoneyMoveRec`, `combinedRiskReduction`, `planConfidence`, `savingsBridge`, `paynowProjection`, `paynowAssessment`, `scanAssessment`. |
-| `components/GuardianStateProvider.tsx` | Session-scoped store built on React context and `useState`. Stores only `balance`, `savings` and `transactions`; recomputes forecast, risk, health score and the Guardian view-model with `useMemo`; exposes the simulated actions and captures a "before" snapshot for before/after comparisons. |
-| `app/layout.tsx` | Wraps every route in `GuardianStateProvider` and `PhoneFrame`. |
-| `app/page.tsx` | Simulated banking home screen with live balances and the Guardian card. |
-| `app/guardian/*` | Daily briefing (`page.tsx`), full analysis (`overview`), 30-day forecast (`cashflow`), selectable recommendations (`actions`) and plan outcome (`success`). |
-| `app/paynow/*` | PayNow amount entry and review with the pre-transaction assessment and intervention sheet (`page.tsx`), the savings-bridge plan (`plan`) and the outcome (`success`). |
-| `app/scan/*`, `app/save/*` | Mock QR Scan & Pay and move-to-savings flows with forecast-aware notes. |
-| `app/account/frank`, `app/account/savings` | Account activity ledgers rendered by `components/AccountActivity.tsx`. |
-| `components/GuardianCard.tsx` | Home-screen card with alert, healthy and post-approval states. |
-| `components/CashflowChart.tsx` | SVG chart of the projected balance against the safety cushion. |
-| `components/HoldToApprove.tsx` | Press-and-hold consent control built on pointer events. |
-| `components/GuardianSequence.tsx` | Skippable "thinking" and "execution" presentation animations. |
-| `components/RecommendationBody.tsx`, `WhyThis.tsx`, `HealthScoreRing.tsx`, `LearningNote.tsx` | Recommendation detail, explanations, score ring and post-action note. |
-| `components/PhoneFrame.tsx`, `AppHeader.tsx`, `BottomNav.tsx`, `Keypad.tsx`, `FakeQR.tsx`, … | Mobile-frame shell and shared UI primitives. |
+Worked example with the seed data:
 
-### Design decisions
+| Step | Value |
+|------|-------|
+| Starting balance | SGD 2,300 (savings SGD 1,200) |
+| Lowest point before payday | **SGD 484.20 on day 9**, after a SGD 1,400 rental deposit and just under the SGD 500 cushion |
+| Proposed SGD 800 PayNow | Lowest point would fall to **−SGD 315.80** → intervention shown |
+| Suggested plan | Top up **SGD 900** from savings (rounded to clear the cushion, within available funds) |
+| Result after approval | Lowest point **SGD 584.20**, risk Medium → Low, savings SGD 300 |
 
-- **Single source of truth.** Only the balances and transaction list are stored. Forecast, risk, recommendations and copy are derived on every render, so screens cannot drift out of sync after an action.
-- **Outcome-based assessment, not amount thresholds.** `paynowAssessment` grades where the customer *ends up* (lowest balance before payday, balance left today, share of savings needed to restore the cushion) rather than flagging payments above a fixed size.
-- **Hard safety rails in the engine.** Top-ups are capped at the savings balance, and the Save flow cannot move more than the spending balance.
-- **Never blocking.** Every intervention offers a way to proceed without the plan.
+## Architecture and technology stack
 
-## Technology stack
+A client-side Next.js App Router application with no API layer:
 
-Versions are those declared in `package.json` and resolved in `package-lock.json`.
+- **`lib/mockData.ts`**: seed data and the decision engine (`buildForecast`, `deriveGuardian`, `paynowAssessment`, `savingsBridge`, `scanAssessment`, …).
+- **`components/GuardianStateProvider.tsx`**: a React context that stores only `balance`, `savings` and `transactions` and derives the forecast, risk and recommendations from them on every change, so no screen can drift out of sync.
+- **`app/`**: route pages for the home screen, Guardian briefing and forecast, PayNow, Scan & Pay, Save and account activity.
+- **`components/`**: shared UI, including the SVG forecast chart and the press-and-hold approval control.
+
+See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the state model, engine formulas, PayNow risk tiers, simulated actions and route map.
 
 | Area | Technology |
 |------|------------|
-| Framework | [Next.js](https://nextjs.org/) 14.2 (App Router) |
-| UI library | [React](https://react.dev/) 18.3 |
-| Language | [TypeScript](https://www.typescriptlang.org/) 5 (strict mode) |
-| Styling | [Tailwind CSS](https://tailwindcss.com/) 3.4, PostCSS, Autoprefixer |
-| Animation | [Framer Motion](https://www.framer.com/motion/) 11 |
-| Icons | [lucide-react](https://lucide.dev/) 0.417 |
-| Deployment | [Vercel](https://vercel.com/); optional Docker image (`Dockerfile`, `docker-compose.yml`) using Next.js standalone output |
+| Framework | Next.js 14.2 (App Router), React 18.3 |
+| Language | TypeScript 5 (strict mode) |
+| Styling | Tailwind CSS 3.4, PostCSS, Autoprefixer |
+| Animation and icons | Framer Motion 11, lucide-react |
+| Deployment | Vercel; optional Docker image using Next.js standalone output |
 
 ## Getting started
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) 18.17 or later (Node 20 LTS recommended; the Docker image uses `node:20-alpine`)
-- npm (the repository ships a `package-lock.json`)
-
-No environment variables, API keys or external services are required.
-
-### Install and run
+**Prerequisites:** Node.js 18.17 or later (20 LTS recommended) and npm. No environment variables, API keys or external services are required.
 
 ```bash
 git clone https://github.com/kwek-na-yi/polyfintech-2026-ocbc-financial-guardian.git
@@ -212,117 +119,74 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The UI is designed for a phone-sized viewport and is rendered inside a phone frame on larger screens.
+Open [http://localhost:3000](http://localhost:3000). The UI is designed for phone-sized screens and appears inside a phone frame on desktop.
 
-### Production build
+| Task | Command |
+|------|---------|
+| Development server | `npm run dev` |
+| Production build | `npm run build` |
+| Serve the production build | `npm start` (logs a standalone-output warning; the build still serves) |
+| Docker | `docker compose up --build`, then open `http://localhost:3000` |
 
-```bash
-npm run build
-npm start
-```
-
-### Docker (optional)
-
-```bash
-docker compose up --build
-```
-
-Then open [http://localhost:3000](http://localhost:3000).
-
-### Resetting the demo
-
-All state lives in memory. A hard refresh of the browser restores the seed balances (spending SGD 2,300, savings SGD 1,200).
+All state is held in memory. Refreshing the page restores the seed data.
 
 ## Example user journey
 
-The demo follows a fictional customer, Jia Hui, mid-month with payday ten days away. **All names, balances and transactions are illustrative demo values, not real customer data.**
+The demo follows a fictional customer, Jia Hui, mid-month with payday ten days away. **All names, balances and transactions are illustrative.**
 
-1. **Open the home screen** (`/`). Balances show SGD 2,300 in the spending account and SGD 1,200 in savings. The Guardian card warns that money could run low in about 9 days.
-2. **Review the Guardian briefing** (`/guardian`). After a short "thinking" animation, the briefing summarises what was noticed: the dip below the cushion, the upcoming salary, an unusual-spending signal and a possible home move.
-3. **Check the forecast** (`/guardian/cashflow`). The 30-day chart and timeline show the balance falling to SGD 484.20 on day 9 after a SGD 1,400 rental deposit, then recovering on salary day.
-4. **Explore the recommendations** (`/guardian/actions`). Each recommendation shows its before/after effect and reasoning; toggling them updates the combined risk-reduction ring. These can be viewed without approving.
-5. **Start an S$800 PayNow transfer** (`/paynow`) to a fictional friend for a weekend trip, then tap *Transfer Now*.
-6. **Review the projected impact.** Before anything is sent, the intervention sheet shows the lowest balance would fall from SGD 484 to −SGD 316.
-7. **Consider the suggested plan** (`/paynow/plan`): send the full SGD 800, top up SGD 900 from savings, and keep the lowest point at SGD 584, above the cushion.
-8. **Explicitly approve** by pressing and holding *Hold to send*.
-9. **Review the outcome** (`/paynow/success`, then `/account/frank`): risk drops from Medium to Low, savings fall to SGD 300, and both the top-up and the PayNow transfer appear in the account activity ledger.
+1. **Home:** balances show SGD 2,300 (spending) and SGD 1,200 (savings).
+2. **Guardian briefing:** after a short reasoning animation, Guardian summarises the coming dip below the cushion, the upcoming salary and other signals.
+3. **Forecast:** the 30-day chart shows the balance falling to SGD 484.20 on day 9, then recovering on payday.
+4. **Recommendations:** each step shows its effect and reasoning; ticking steps updates the combined risk reduction. Nothing happens until the customer holds to approve.
+5. **PayNow:** the customer starts an SGD 800 transfer to a friend and taps *Transfer Now*.
+6. **Intervention:** before anything is sent, Guardian shows the lowest balance would drop from SGD 484 to −SGD 316.
+7. **Plan:** send the full SGD 800 and top up SGD 900 from savings to stay above the cushion.
+8. **Approval:** the customer presses and holds *Hold to send*.
+9. **Outcome:** risk drops from Medium to Low, and both the top-up and the transfer appear in the account activity.
 
-## Screenshots and demonstration
-
-The live prototype is available at **[ocbc-financial-guardian.vercel.app](https://ocbc-financial-guardian.vercel.app)**.
-
-Screenshots have not yet been added to the repository. The planned set, to be stored in `docs/screenshots/`, is:
-
-| Screen | Route |
-|--------|-------|
-| Home screen with Guardian alert | `/` |
-| Guardian briefing | `/guardian` |
-| 30-day cash-flow forecast | `/guardian/cashflow` |
-| Recommendations / Action Centre | `/guardian/actions` |
-| PayNow intervention | `/paynow` (after *Transfer Now* with SGD 800) |
-| Transaction outcome | `/paynow/success` |
+| Briefing | Recommendations | Plan |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/02-briefing.png" alt="Guardian daily briefing" width="220"> | <img src="docs/screenshots/04-recommendations.png" alt="Recommendations with combined risk reduction" width="220"> | <img src="docs/screenshots/06-paynow-plan.png" alt="PayNow savings-bridge plan with hold to send" width="220"> |
+| **Outcome** | **Account activity** | |
+| <img src="docs/screenshots/07-paynow-outcome.png" alt="Before and after outcome of the approved plan" width="220"> | <img src="docs/screenshots/08-account-activity.png" alt="Account ledger showing the top-up and PayNow transfer" width="220"> | |
 
 ## Current limitations
 
-This is a hackathon prototype. In particular:
+- **Illustrative, hardcoded data.** Accounts, transactions, the seven scheduled events, salary and the SGD 500 cushion are constants. Spending between scheduled events is a single fixed month-end adjustment, and the briefing date is fixed.
+- **Deterministic rules, not AI/ML.** There is no trained model, LLM, RAG pipeline or external AI API. Confidence figures (such as "96% sure" or the "87% sure" home-move signal) and the behavioural risk-reduction percentages are formula-based or fixed values, not calibrated probabilities.
+- **No learning.** Post-action "learning" notes are presentational copy; no preferences are stored or reused.
+- **No banking integration.** No real accounts are read and no PayNow or ledger APIs are called. The QR code is decorative.
+- **No backend or persistence.** State lives in browser memory and resets on refresh. There are no user accounts.
+- **No production security.** There is no authentication, consent management, transaction signing or audit logging.
+- **Single scenario.** One customer profile and one PayNow recipient.
+- **No automated tests or lint configuration.** Verification so far is manual, plus TypeScript strict type-checking and the production build.
 
-- **Illustrative, hardcoded data.** Accounts, transactions, the seven scheduled events, the salary amount and the SGD 500 cushion are constants in `lib/mockData.ts`. Spending between scheduled events is modelled as a single fixed month-end adjustment, and the briefing date is fixed.
-- **Deterministic rules, not AI/ML.** There is no trained model, LLM, RAG pipeline or external AI API. Confidence figures (e.g. plan confidence, the "87% sure" home-move signal) and the risk-reduction percentages for behavioural recommendations are formula-based or fixed illustrative values, not calibrated probabilities.
-- **No learning.** The post-action "learning" notes are presentational copy; no customer preferences are stored or used to change future behaviour.
-- **No live OCBC or banking integration.** No real accounts are read and no PayNow, FAST or ledger APIs are called. The QR code is decorative and not scannable.
-- **No backend, database or persistent profile.** State is held in React memory and resets on a hard refresh; it is not shared between devices or sessions.
-- **Simulated financial actions.** Transfers, payments and savings moves only update in-memory numbers.
-- **No production security infrastructure.** There is no authentication, authorisation, consent management, transaction signing or banking-grade audit logging.
-- **Single scenario.** The engine supports one customer profile and one PayNow recipient.
-- **No automated tests or lint configuration** are currently included; verification has been manual plus TypeScript strict type-checking and the Next.js production build.
+## Future development roadmap
 
-## Future implementation roadmap
+**Proposed future work. None of this is implemented, and no timelines, approvals or outcomes are implied.**
 
-The following is **proposed future work**. None of it is implemented in this repository, and timelines, approvals and outcomes are not guaranteed.
+1. **Data and infrastructure:** a secure backend and database; authentication and consent management; persistent profiles, preferences and transaction history; a controlled integration with approved banking data sources, subject to appropriate access and approval.
+2. **Forecasting and risk:** forecasting models validated against historical data, including irregular spending; anomaly detection with calibrated confidence; benchmarking against the current rule-based engine; work to reduce false alerts.
+3. **Responsible recommendations:** explainable recommendation workflows; tightly scoped permissions and approval steps for any money movement; audit trails, monitoring, fallbacks and rollback procedures; adversarial testing and human oversight.
+4. **Quality and pilot:** automated unit and end-to-end tests; security, privacy and regulatory review; internal testing followed by a limited opt-in pilot measured against the metrics below.
 
-**Phase 1 — Data and infrastructure**
-- Secure backend service and database.
-- Customer authentication and consent management for data use.
-- Persistent customer profiles, preferences (e.g. personal cushion) and transaction history.
-- Integration with approved banking data sources through sanctioned interfaces.
+## Proposed success metrics
 
-**Phase 2 — Forecasting and intelligence**
-- Forecasting models trained and validated on appropriate historical data, covering recurring and irregular spending.
-- Anomaly detection and calibrated confidence estimates.
-- Explainable risk assessments, with recommendation quality evaluated offline.
-- Benchmarking against simple baselines (such as the current rule-based engine) and testing on edge cases.
+**These are proposed evaluation metrics for a future pilot. They are not measured results.**
 
-**Phase 3 — Responsible agentic capabilities**
-- Context-aware recommendations with tightly scoped tool access.
-- Explicit permission boundaries and approval workflows for any money movement.
-- Audit trails, monitoring, safe fallbacks and rollback procedures.
-- Adversarial testing and ongoing human oversight.
-
-**Phase 4 — Controlled pilot**
-- Security assessment and privacy review.
-- Assessment against relevant regulatory and compliance requirements.
-- Internal testing followed by a limited, opt-in pilot.
-- Measurement against the success metrics below.
-
-## Success metrics
-
-These are **proposed** criteria for evaluating a future pilot. They are not measured results.
-
-| Area | Proposed metric |
-|------|-----------------|
-| Forecast quality | Error between projected and actual lowest balance and month-end balance (e.g. mean absolute error) |
-| Alert quality | False-positive rate (alerts where no shortfall would have occurred) and false-negative rate (missed shortfalls) |
-| Engagement | Share of customers who open, review and act on recommendations |
-| Outcomes | Frequency of avoidable shortfalls versus a control group in an appropriately designed evaluation |
-| Comprehension and trust | Survey-based understanding of why a recommendation was made, and stated trust in the guidance |
-| Intervention response | Acceptance, modification, "send anyway" and opt-out rates for pre-payment interventions |
+| Area | Metric |
+|------|--------|
+| Forecast accuracy | Error between projected and actual lowest and month-end balances |
+| Alert quality | False-positive rate (alerts with no real shortfall) and false-negative rate (missed shortfalls) |
+| Recommendation uptake | Share of recommendations reviewed, accepted, modified or dismissed |
+| Customer outcomes | Frequency of avoidable shortfalls versus a control group |
+| Comprehension and trust | Survey-based understanding of why advice was given, and stated trust in it |
+| Intervention response | *See my plan*, *Change amount*, *Send anyway* and opt-out rates |
 
 ## Team and acknowledgements
 
-Developed by **Team NeuroStack** for the **PolyFinTech Hackathon 2026**.
-
-Thanks to the PolyFinTech Hackathon 2026 organisers, mentors and judges.
+Developed by **Team NeuroStack** for the **PolyFinTech Hackathon 2026**. Thanks to the hackathon organisers, mentors and judges.
 
 ## Disclaimer
 
-Financial Guardian is an independent educational and hackathon prototype built with illustrative data. It is **not an official OCBC product** and is not affiliated with, endorsed by or connected to OCBC Bank. It does not access real bank accounts, does not move real money, and must not be used to make real financial decisions. Names of banks, products and merchants appear only to make the simulated scenario realistic; all trademarks belong to their respective owners.
+Financial Guardian is an independent educational and hackathon prototype built with illustrative data. It is **not an official OCBC product** and is not affiliated with, endorsed by or connected to OCBC Bank. It does not access real bank accounts, does not move real money, and must not be used to make real financial decisions. Bank, product and merchant names appear only to make the simulated scenario realistic; all trademarks belong to their respective owners.
