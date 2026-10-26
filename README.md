@@ -137,14 +137,15 @@ All state is held in memory. Refreshing the page restores the seed data.
 
 ### Tests
 
-The test suite (45 tests) checks the deterministic engine and the in-memory store:
+`npm test` runs 45 unit and integration tests covering the forecast, risk boundaries, recommendation sizing, PayNow risk tiers and every simulated action. They confirm the code does what it is designed to do, not that the forecasts are financially accurate. See [docs/ARCHITECTURE.md § Testing](docs/ARCHITECTURE.md#testing) for details.
 
-- **Forecast:** the seed low and month-end figures, event ordering, the pre-payday window, and zero and negative balances.
-- **Risk and recommendations:** the cushion boundaries for each risk level, how top-ups are sized, and that top-ups never exceed savings.
-- **PayNow tiers:** boundaries for all five tiers, including the 40%-of-savings threshold and the empty-savings case.
-- **Simulated actions:** each action's effect on balances and the ledger, actions compounding across a session, and reset.
+### Configuration and deployment
 
-The tests confirm the code does what it is designed to do. They do not show that the forecasts are financially accurate.
+**Environment variables:** none. The app reads no environment variables, locally or in production, and needs no API keys or `.env` file. All environment files are excluded by `.gitignore`.
+
+**Vercel:** the live demo uses Vercel's standard Next.js setup, with no `vercel.json` and no project environment variables. To deploy your own copy, import the repository in the Vercel dashboard (or run the external `vercel` CLI) and keep the defaults: framework preset Next.js, build command `npm run build`. Set the project's Node.js version to 22.x to match local development.
+
+**Docker:** `next.config.js` produces a standalone server build, and the `Dockerfile` packages it into a small, non-root image that serves on port 3000.
 
 ## Example user journey
 

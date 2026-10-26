@@ -205,7 +205,6 @@ All routes are statically prerendered by `next build`; interactivity is client-s
 | `LearningNote` | Post-action note (presentational copy only) |
 | `AccountActivity` | Ledger grouped by date for either account |
 | `FakeQR` | Decorative, non-scannable QR graphic |
-| `ConfirmationModal` | Generic confirmation dialog (not currently used by any route) |
 
 ## Testing
 
